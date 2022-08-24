@@ -1,15 +1,21 @@
 const mongoCollections = require('../config/mongoCollections')
-let { ObjectID } = require("mongodb");
+let { ObjectId } = require("mongodb");
 const reviews = mongoCollections.reviews;
 const restaurants = mongoCollections.restaurants;
 const customer = mongoCollections.customers;
 
 
 module.exports = {
-    async create(restaurantId, customersId, reviewText, rating) {
+    async create(restaurantId, customersId, reviewText, rating, profileImage, name) {
         rating = Number(rating)
+        if (!restaurantId) restaurantId = '';
         restaurantId = restaurantId.toString();
+        if (!customersId) customersId = '';
         customersId = customersId.toString();
+        if (!name) name = '';
+        name = name.toString();
+        if (!profileImage) profileImage = '';
+        profileImage = profileImage.toString('base64');
         if (typeof restaurantId != 'string') throw 'No Restaurant with proper type has been provided'
         if (restaurantId == null || restaurantId.length == 0) throw 'No Restaurant has been selected'
         if (restaurantId.trim() == '') throw 'Restaurant Id provided contains only empty spaces'
@@ -34,7 +40,7 @@ module.exports = {
         let { ObjectId } = require('mongodb');
         let newObjId = ObjectId();
         if (!ObjectId.isValid(newObjId)) throw 'Object id is not valid'
-        let x = newObjId.toString();
+        // let x = newObjId.toString();
         let parsedId = ObjectId(restaurantId);
 
         const checkSal = await sal.findOne({ _id: parsedId })
@@ -50,8 +56,8 @@ module.exports = {
             customersId: customersId,
             reviewText: reviewText,
             rating: rating,
-            upvote: [],
-            downvote: []
+            name: name,
+            profileImage: profileImage,
         }
 
         const insertInfo = await reviewCollection.insertOne(newReview);
@@ -60,9 +66,9 @@ module.exports = {
         var demo
         var sum = 0
 
-        let SalUpdate = await sal.updateOne({ _id: ObjectID(newReview.restaurantId) }, { $push: { reviewId: (newReview._id).toString() } })
+        let SalUpdate = await sal.updateOne({ _id: ObjectId(newReview.restaurantId) }, { $push: { reviewId: (newReview._id).toString() } })
 
-        const reviewofOneSal = await sal.findOne({ _id: ObjectID(restaurantId) });
+        const reviewofOneSal = await sal.findOne({ _id: ObjectId(restaurantId) });
 
         var demo = 0
         var sum = 0
@@ -81,8 +87,8 @@ module.exports = {
         }
 
         let updateCustomer = await customer();
-        let custUpdate = await updateCustomer.updateOne({ _id: ObjectID(newReview.customersId) }, { $push: { reviewId: (newReview._id).toString() } });
-        let SalUpdate1 = await sal.updateOne({ _id: ObjectID(newReview.restaurantId) }, { $set: { rating: newOverallRating } })
+        let custUpdate = await updateCustomer.updateOne({ _id: ObjectId(newReview.customersId) }, { $push: { reviewId: (newReview._id).toString() } });
+        let SalUpdate1 = await sal.updateOne({ _id: ObjectId(newReview.restaurantId) }, { $set: { rating: newOverallRating } })
         return JSON.parse(JSON.stringify(newReview))
     },
 
@@ -201,13 +207,13 @@ module.exports = {
             throw 'Review ID cannot be found'
         }
 
-        const deleteInfo = await reviewCollection.removeOne({ _id: parsedId });
+        const deleteInfo = await reviewCollection.deleteOne({ _id: parsedId });
         if (deleteInfo.deletedCount === 0) throw `Could not delete review with id of ${parsedId}`;
 
-        let SalUpdate = await sal.updateOne({ _id: ObjectID(review.restaurantId) }, { $pull: { reviewId: reviewId } })
+        let SalUpdate = await sal.updateOne({ _id: ObjectId(review.restaurantId) }, { $pull: { reviewId: reviewId } })
 
         let updateCustomer = await customer();
-        let custUpdate = await updateCustomer.updateOne({ _id: ObjectID(review.customersId) }, { $pull: { reviewId: reviewId } });
+        let custUpdate = await updateCustomer.updateOne({ _id: ObjectId(review.customersId) }, { $pull: { reviewId: reviewId } });
         console.log('looks okay now')
         const getSal1 = await sal.findOne(ObjectId(salid));
 
@@ -247,7 +253,7 @@ module.exports = {
         let newObjId = ObjectId();
         if (!ObjectId.isValid(newObjId)) throw 'Object id is not valid'
         let x = newObjId.toString();
-        let parsedID = ObjectID(reviewId);
+        let parsedID = ObjectId(reviewId);
 
         const reviewCollection = await reviews();
 
@@ -300,5 +306,4 @@ module.exports = {
             return true;
         }
     }
-
 }

@@ -9,7 +9,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const static = express.static(__dirname + '/public');
 app.use('/public', static);
-app.engine('handlebars', exphbs({ defaultLayout: 'main' }));
+app.engine('handlebars', exphbs.engine({ defaultLayout: 'main' }));
 app.set('view engine', 'handlebars');
 
 app.use(session({
@@ -36,10 +36,10 @@ app.use(async(req, res, next) => {
     const requestRoute = req.originalUrl;
     if (req.session.user) {
         console.log(
-            `[ ${currentTimestamp} ] :  ${requestMethod} ${requestRoute} (Authenticated User)`)
+            `[${currentTimestamp}]: ${requestMethod} ${requestRoute} (Authenticated User)`)
     } else {
         console.log(
-            `[ ${currentTimestamp} ] :  ${requestMethod} ${requestRoute} (Non-Authenticated User)`)
+            `[${currentTimestamp}]: ${requestMethod} ${requestRoute} (Non-Authenticated User)`)
     }
     next();
 })
